@@ -1,0 +1,58 @@
+service: aws-node-express-api
+
+frameworkVersion: '2'
+variablesResolutionMode: '20210219'
+configValidationMode: 'error'
+
+plugins:
+  - serverless-offline
+  - serverless-apigw-binary
+
+custom:
+  apigwBinary:
+    types:
+      - 'application/octet-stream'
+      - 'image/png'
+      - 'image/jpg'
+      - 'image/jpeg'
+      - 'application/bson'
+      # - '*/*' # need this for browser conversion of images
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: '20201221'
+  region: 'ap-northeast-1'
+  apiGateway:
+    shouldStartNameWithService: true
+    binaryMediaTypes:
+      # - '*/*'
+      - 'multipart/form-data'
+  iamRoleStatements:
+    - Sid: ''
+      Effect: Allow
+      Action:
+        # - s3:ListObjectsV2
+        - s3:*
+        # - s3:PutObject
+        # - s3:CreateBucket
+        # - s3:ListBuckets
+      Resource: "*"
+
+functions:
+  api:
+    handler: handler.handler
+    vpc:
+      securityGroupIds:
+        - sg-0e1693dc01e65e52f
+      subnetIds:
+        - subnet-0fcd8ada122aa42de
+    events:
+      - http:
+          path: /
+          method: ANY
+          cors: true
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: true
